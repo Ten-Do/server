@@ -31,7 +31,7 @@ exports.up = function (knex) {
         table.string('solution_file').notNullable(); // файл с решением
     })
     .createTable('materials', table => {
-        table.increments(id);
+        table.increments('id');
         table.string('type').notNullable();
         table.string('title').notNullable();
         table.text('description');
