@@ -34,8 +34,8 @@ exports.up = function (knex) {
         table.increments('id');
         table.string('type').notNullable();
         table.string('title').notNullable();
-        table.text('description');
-        table.string('additional_data_file');
+        table.text('description').defaultTo('');
+        table.string('additional_data_file').defaultTo(null);
     })
     .createTable('tokens', table => {
         table.integer('user_id').unsigned().unique().notNullable();

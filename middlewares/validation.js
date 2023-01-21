@@ -3,6 +3,7 @@ const path = require('path')
 
 module.exports = function (req, res, next) {
     try{
+
         let extension = (path.extname(req.files.img.name)).toLowerCase();
         switch (extension) {
             case '.jpg':
