@@ -14,7 +14,6 @@ router.get('/materials', materialsController.getAllMaterials)
 router.get('/materials/:id', materialsController.getOneMaterial)
 router.post('/materials', materialsController.addMaterial)
 router.put('/materials', materialsController.updateMaterial)
-
 router.delete('/materials', materialsController.deleteMaterial)
 /*
 router.post('/registration', imgValidation, body('email').isEmail(), controller.registration);

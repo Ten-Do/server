@@ -5,9 +5,9 @@ exports.up = function (knex) {
         table.string('name').notNullable();
         table.string('surname').notNullable();
         table.string('password').notNullable();
-        table.string('img').notNullable();
+        table.string('student_card').notNullable();
         table.boolean('activated').defaultTo(false);
-        table.string('role').defaultTo('User');
+        table.string('role').defaultTo('user');
         // далее идут подписки на задачи
         table.boolean('admin').defaultTo(false);
         table.boolean('reverse').defaultTo(false);

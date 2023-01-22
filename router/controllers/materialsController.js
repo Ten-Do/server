@@ -9,8 +9,8 @@ const path = require('path');
  * POST: body = {type, title, [description, file]} => status + message 
  * DELETE: body = {id} => status + message
  * GET (all): => json
- * GET (one): query = {id} => json
- * PUT: body {id, type, title, [description, file]} => status + message
+ * GET (one): params = {id} => json
+ * PUT: body = {id, type, title, [description, file]} => status + message
  */
 
 class MaterialsController {
@@ -60,7 +60,13 @@ class MaterialsController {
         try {
             await db('materials')
                 .select('*')
-                .then(result => { res.status(200).send(result) })
+                .then(result => {
+                    if (result.length) {
+                        return res.status(200).send(result)
+                    } else {
+                        return res.status(404).send({ message: "Материалов нет" })
+                    }
+                })
                 .catch(error => { res.status(501).send({ message: "База данных отклонила получение" }); next(error) })
         } catch (error) {
             res.status(500).send({ message: "Произошла неожиданная ошибка. Пожалуйста попробуйте позже" });
@@ -73,7 +79,13 @@ class MaterialsController {
             await db('materials')
                 .select('*')
                 .where('id', req.params.id)
-                .then(result => { res.status(200).send(result) })
+                .then(result => {
+                    if (result.length) {
+                        return res.status(200).send(result)
+                    } else {
+                        return res.status(404).send({ message: "Запрошенных материалов не найдено" })
+                    }
+                })
                 .catch(error => { res.status(501).send({ message: "База данных отклонила получение" }); next(error) })
         } catch (error) {
             res.status(500).send({ message: "Произошла неожиданная ошибка. Пожалуйста попробуйте позже" });
