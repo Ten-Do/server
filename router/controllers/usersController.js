@@ -1,7 +1,5 @@
 const db = require('../../db/db');
-const Storage = require('./storageController')
-const uuid = require('uuid');
-const path = require('path');
+const Storage = require('../../services/storageService')
 const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator')
 const ApiError = require('../../exceptions/api-error')
@@ -65,46 +63,7 @@ class UsersController {
         }
     }
 
-    async login(req, res, next) {
-        try {
-            const { email, password } = req.body;
 
-            await knex(`users`).select().where({ email: email })
-                .then(async users => {
-                    const user = users[0]
-                    if (!user) {
-                        throw ApiError.BadRequest('Пользователь с таким email не найден!')
-                    }
-                    if (!(await bcrypt.compare(password, user.password))) {
-                        throw ApiError.BadRequest('Неверный парроль');
-                    }
-                    const userInfo = {
-                        name: user.name,
-                        surname: user.surname,
-                        role: user.role,
-                        activated: user.activated,
-                        subscriptions: {
-                            admin: user.admin,
-                            reverse: user.reverse,
-                            stegano: user.stegano,
-                            ppc: user.ppc,
-                            forensic: user.forensic,
-                            crypto: user.crypto,
-                            web: user.web,
-                            network: user.network,
-                            osint: user.osint,
-                        }
-                    }
-                    const tokens = tokenService.generateTokens(userInfo);
-                    tokenService.saveToken(user.id, tokens.refreshToken);
-                    res.cookie('refreshToken', tokens.refreshToken, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
-                });
-
-            return res.status(200);
-        } catch (e) {
-            next(e);
-        }
-    }
 
     // для самого пользователя
     async updateUser(req, res, next) {
@@ -121,6 +80,7 @@ class UsersController {
             next(error);
         }
     }
+
 
     async getOneUser(req, res, next) {
         try {
@@ -140,6 +100,7 @@ class UsersController {
             next(error);
         }
     }
+    
 
     async deleteUser(req, res, next) {
         try {

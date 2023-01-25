@@ -39,10 +39,9 @@ class TokenService {
     }
 
     async removeToken(refreshToken) {
-        const tokenData = await db(`tokens`)
+        db(`tokens`)
             .update({ refresh_token: 0 })
             .where({ refresh_token: refreshToken });
-        return tokenData;
     }
 
     async findToken(refreshToken) {
