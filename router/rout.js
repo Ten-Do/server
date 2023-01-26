@@ -16,9 +16,9 @@ router.get('/materials/:id', materialsController.getOneMaterial)
 router.post('/materials', materialsController.addMaterial)
 router.put('/materials', materialsController.updateMaterial)
 router.delete('/materials', materialsController.deleteMaterial)
-router.post('/registration', imgValidation, body('email').isEmail(), usersController.registration);
+router.post('/registration', body('email').isEmail(), usersController.registration);
 router.post('/login', tokensController.login);
-router.post('/logout', tokensController.logout);
+router.delete('/logout', tokensController.logout);
 router.get('/refresh', tokensController.refresh);
 /*
 router.get('/getTasks', authMiddleware, accesMiddleware, controller.gettingTasks);

@@ -40,8 +40,8 @@ class TokenService {
 
     async removeToken(refreshToken) {
         db(`tokens`)
-            .update({ refresh_token: 0 })
-            .where({ refresh_token: refreshToken });
+            .where({ refresh_token: refreshToken })
+            .del()
     }
 
     async findToken(refreshToken) {

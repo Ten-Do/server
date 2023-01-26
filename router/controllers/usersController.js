@@ -14,7 +14,6 @@ const tokenService = require('../../services/tokensService')
  * GET (one): params = {id} => json
  * PUT (from user): body = {id, type, title, [description, file]} => status + message
  */
-//Math.random().toString(36).slice(-8);
 
 function gen_password() {
     let password = "";
@@ -33,8 +32,10 @@ class UsersController {
                 throw ApiError.BadRequest('Ошибка при валидации', errors.array())
             }
 
-            const { email, name, surname, subscriptions } = req.body;
-            const file = req.files.studentCard;
+            const { email, name, surname } = req.body;
+            const { studentCard } = req.files;
+            const subscriptions = JSON.parse(req.body.subscriptions);
+
 
             await db(`users`).select().where({ email }).then(candidate => {
                 if (candidate.length !== 0) {
@@ -44,7 +45,7 @@ class UsersController {
 
             const password = gen_password();
             const hashPass = await bcrypt.hash(password, 3);
-            const fileName = await Storage.addStudentCard(file);
+            const fileName = await Storage.addStudentCard(studentCard);
             const userObj = subscriptions ?
                 { email, name, surname, ...subscriptions, password: hashPass, student_card: fileName, activated: false, role: 'user' }
                 :
