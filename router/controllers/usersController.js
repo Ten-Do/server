@@ -55,6 +55,7 @@ class UsersController {
                 .insert(userObj)
                 .then(_ => {
                     // res.cookie('refreshToken', userData.refreshToken, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+                    
                     res.status(201).send({ message: "Добавление прошло успешно" })
                 })
                 .catch(error => { res.status(501).send({ message: "База данных отклонила добавление" }); next(error) })
