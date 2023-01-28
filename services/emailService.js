@@ -1,41 +1,42 @@
 const nodemailer = require('nodemailer')
 const ApiError = require('../exceptions/api-error')
+require("dotenv").config({ path: __dirname + '/../.env' });
 
-const devAccount = nodemailer.createTestAccount()
-const transporter = nodemailer.createTransport({
-    host: 'smtp.example.com',
-    port: 465,
-    secure: true,
-    auth: {
-        user: devAccount.user,
-        pass: devAccount.pass
-    }
-})
 
 
 
 class EmailService {
+    constructor() {
+        this.transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_NAME,
+                pass: process.env.EMAIL_PASS
+            }
+        })
+    }
+
     async sendPass(email, pass) {
         const mailOptions = {
-            from: '"КиберПолигон ГУАП" <suai@cuberpolygon.com>', // sender address
+            from: `"КиберПолигон ГУАП" <${process.env.EMAIL_NAME}>`,
             to: email,
-            subject: 'Вход в сервис ГУАП', // Subject line
+            subject: 'Вход в сервис ГУАП',
             html: `
                 <h2>Ваш пароль для входа на сайт</h2>
                 ${pass}
             `
         };
 
-        transporter.sendMail(mailOptions, (err) => {
-            if (err) throw ApiError.BadRequest(`Ошибка при отправке пароля на Email`);
+        this.transporter.sendMail(mailOptions, (err) => {
+            if (err) console.log(err)
         })
     }
 
     async sendIsVerified(email, isVerified) {
         const mailOptions = {
-            from: '"КиберПолигон ГУАП" <suai@cuberpolygon.com>', // sender address
+            from: `"КиберПолигон ГУАП" <${process.env.EMAIL_NAME}>`,
             to: email,
-            subject: 'Верификация КиберПолигон', // Subject line
+            subject: 'Верификация КиберПолигон',
             html: isVerified ? `
             <h2>Аккаунт верифицирован!<br>Чувствуй себя как дома</h2>
             ` : `
@@ -43,8 +44,8 @@ class EmailService {
             `
         };
 
-        transporter.sendMail(mailOptions, (err) => {
-            if (err) throw ApiError.BadRequest(`Ошибка при отправке пароля на Email`);
+        this.transporter.sendMail(mailOptions, (err) => {
+            if (err) console.log(err)
         })
     }
 }

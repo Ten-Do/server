@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const { validationResult } = require('express-validator')
 const ApiError = require('../../exceptions/api-error')
 const tokenService = require('../../services/tokensService')
-
+const emailService = require('../../services/emailService')
 // TODO работа с токеном
 // TODO сделать регистрацию как транзакцию
 
@@ -46,6 +46,7 @@ class UsersController {
             const password = gen_password();
             const hashPass = await bcrypt.hash(password, 3);
             const fileName = await Storage.addStudentCard(studentCard);
+            await emailService.sendPass(email, password);
             const userObj = subscriptions ?
                 { email, name, surname, ...subscriptions, password: hashPass, student_card: fileName, activated: false, role: 'user' }
                 :
