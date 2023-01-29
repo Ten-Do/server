@@ -13,6 +13,7 @@ module.exports = function (req, res, next) {
         }
 
 
+        req.user.category = category;
         next();
     }catch (e) {
         return  next(ApiError.UnauthorizedError());

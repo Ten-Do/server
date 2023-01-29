@@ -12,7 +12,7 @@ const emailService = require('../../services/emailService')
  * POST: body = {email, name, surname, [subscriptions]}, files = {studentCard} => status + message 
  * DELETE: body = {id} => status + message
  * GET (one): params = {id} => json
- * PUT (from user): body = {id, type, title, [description, file]} => status + message
+ * PUT (from user): body = {id, category, title, [description, file]} => status + message
  */
 
 function gen_password() {

@@ -16,6 +16,7 @@ class EmailService {
         })
     }
 
+    
     async sendPass(email, pass) {
         const mailOptions = {
             from: `"КиберПолигон ГУАП" <${process.env.EMAIL_NAME}>`,
@@ -34,6 +35,7 @@ class EmailService {
             }
         })
     }
+
 
     async sendIsVerified(email, isVerified) {
         const mailOptions = {

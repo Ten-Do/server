@@ -1,5 +1,8 @@
 const uuid = require('uuid')
 const path = require('path')
+const { readFile } = require('fs').promises
+const ApiError = require("../exceptions/api-error");
+
 
 module.exports = class Storage {
     static async addStudentCard(img) {
@@ -16,8 +19,14 @@ module.exports = class Storage {
         return fileName;
     }
 
-    getTask() {
-        console.log("1233212321")
+    static async getFile(fileName) {
+        try {
+            const file = await readFile(path)
+            return file
+        }
+        catch (err) {
+            throw ApiError.NotImplementedError()
+        }
     }
 }
 

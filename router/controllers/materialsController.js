@@ -6,19 +6,19 @@ const path = require('path');
 // про удаление файлов тож не забудь.. в общем CRUD братанчик
 
 /**
- * POST: body = {type, title, [description, file]} => status + message 
+ * POST: body = {category, title, [description, file]} => status + message 
  * DELETE: body = {id} => status + message
  * GET (all): => json
  * GET (one): params = {id} => json
- * PUT: body = {id, type, title, [description, file]} => status + message
+ * PUT: body = {id, category, title, [description, file]} => status + message
  */
 
 class MaterialsController {
     async addMaterial(req, res, next) {
         try {
-            const { type, title, description = '' } = req.body;
+            const { category, title, description = '' } = req.body;
             const file = req.files?.additionalDataFile;
-            const materialObj = { type, title, description };
+            const materialObj = { category, title, description };
 
             if (file) {
                 const fileName = uuid.v4() + path.extname(file.name);
@@ -37,9 +37,9 @@ class MaterialsController {
 
     async updateMaterial(req, res, next) {
         try {
-            const { id, type, title, description = '' } = req.body;
+            const { id, category, title, description = '' } = req.body;
             const file = req.files?.additionalDataFile;
-            const materialObj = { id, type, title, description };
+            const materialObj = { id, category, title, description };
 
             if (file) {
                 const fileName = uuid.v4() + path.extname(file.name);

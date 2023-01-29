@@ -21,7 +21,7 @@ exports.up = function (knex) {
     })
     .createTable('tasks', table => {
         table.increments('id');
-        table.string('type').notNullable(); // одна из подписок
+        table.string('category').notNullable(); // одна из подписок
         table.string('difficulty').notNullable();
         table.smallint('points').unsigned().notNullable();
         table.string('title').notNullable();
@@ -32,7 +32,7 @@ exports.up = function (knex) {
     })
     .createTable('materials', table => {
         table.increments('id');
-        table.string('type').notNullable();
+        table.string('category').notNullable();
         table.string('title').notNullable();
         table.text('description').defaultTo('');
         table.string('additional_data_file').defaultTo(null);

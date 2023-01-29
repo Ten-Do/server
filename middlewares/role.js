@@ -1,13 +1,13 @@
 const ApiError = require("../exceptions/api-error");
-const tokenService = require("../service/token");
+const tokenService = require("../services/tokensService");
 
 
 module.exports = function (roles) {
     return function (req, res, next) {
-        try{
+        try {
             const userRole = req.user;
 
-            if (!userRole.role){
+            if (!userRole.role) {
                 return next(ApiError.UnauthorizedError());
             }
 
@@ -16,8 +16,8 @@ module.exports = function (roles) {
             }
 
             next();
-        }catch (e) {
-            return  next(e);
+        } catch (e) {
+            return next(e);
         }
     }
 }
