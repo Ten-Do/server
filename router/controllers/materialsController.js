@@ -1,16 +1,12 @@
 const db = require('../../db/db');
-const uuid = require('uuid');
-const path = require('path');
-
-// TODO у тебя пока что файлы не сохраняются. надо чтоб сохранялись ;)
-// про удаление файлов тож не забудь.. в общем CRUD братанчик
-
+const StorageService = require('../../services/storageService');
+const ApiError = require("../../exceptions/api-error");
 /**
- * POST: body = {category, title, [description, file]} => status + message 
+ * POST: body = {type, title, [description, file]} => status + message
  * DELETE: body = {id} => status + message
  * GET (all): => json
  * GET (one): params = {id} => json
- * PUT: body = {id, category, title, [description, file]} => status + message
+ * PUT: body = {id, type, title, [description, file]} => status + message
  */
 
 class MaterialsController {
@@ -21,16 +17,13 @@ class MaterialsController {
             const materialObj = { category, title, description };
 
             if (file) {
-                const fileName = uuid.v4() + path.extname(file.name);
-                const pathToFile = __dirname + '/../../storage/' + fileName;
-                materialObj.additional_data_file = fileName;
+                materialObj.additional_data_file = await StorageService(file);
             }
 
             await db('materials').insert(materialObj)
                 .then(_ => { res.status(201).send({ message: "Добавление прошло успешно" }) })
                 .catch(error => { res.status(501).send({ message: "База данных отклонила добавление" }); next(error) })
         } catch (error) {
-            res.status(500).send({ message: "Произошла неожиданная ошибка. Пожалуйста попробуйте позже" });
             next(error);
         }
     }
@@ -42,38 +35,39 @@ class MaterialsController {
             const materialObj = { id, category, title, description };
 
             if (file) {
-                const fileName = uuid.v4() + path.extname(file.name);
-                const pathToFile = __dirname + '/../../storage/' + fileName;
-                materialObj.additional_data_file = fileName;
+                materialObj.additional_data_file = await StorageService(file);
             }
 
             await db('materials').where('id', id).update(materialObj)
                 .then(_ => { res.status(201).send({ message: "Обновление прошло успешно" }) })
                 .catch(error => { res.status(501).send({ message: "База данных отклонила обновление" }); next(error) })
         } catch (error) {
-            res.status(500).send({ message: "Произошла неожиданная ошибка. Пожалуйста попробуйте позже" });
             next(error);
         }
     }
 
-    async getAllMaterials(_, res, next) {
+    // get: .../api/materials?cat=cat1,cat2,cat3...
+    // example: .../api/materials?cat=ppc,web,network
+    async getAllMaterials(req, res, next) {
         try {
+            const cat = req.query.cat.split(',');
             await db('materials')
                 .select('*')
+                .whereIn('category', cat)
                 .then(result => {
                     if (result.length) {
                         return res.status(200).send(result)
                     } else {
-                        return res.status(404).send({ message: "Материалов нет" })
+                        throw ApiError.NotFoundError({ message: "Материалов нет" })
                     }
                 })
-                .catch(error => { res.status(501).send({ message: "База данных отклонила получение" }); next(error) })
+                .catch(error => { throw ApiError.NotImplementedError(error) })
         } catch (error) {
-            res.status(500).send({ message: "Произошла неожиданная ошибка. Пожалуйста попробуйте позже" });
             next(error);
         }
     }
 
+    // походу юзлесс функция ойай..
     async getOneMaterial(req, res, next) {
         try {
             await db('materials')
@@ -83,12 +77,11 @@ class MaterialsController {
                     if (result.length) {
                         return res.status(200).send(result)
                     } else {
-                        return res.status(404).send({ message: "Запрошенных материалов не найдено" })
+                        throw ApiError.NotFoundError({ message: "Запрошенных материалов не найдено" });
                     }
                 })
-                .catch(error => { res.status(501).send({ message: "База данных отклонила получение" }); next(error) })
+                .catch(error => { throw ApiError.NotImplementedError(error) })
         } catch (error) {
-            res.status(500).send({ message: "Произошла неожиданная ошибка. Пожалуйста попробуйте позже" });
             next(error);
         }
     }
@@ -99,9 +92,8 @@ class MaterialsController {
                 .where('id', req.body.id)
                 .del()
                 .then(_ => { res.status(200).send({ message: "Удаление прошло успешно" }) })
-                .catch(error => { res.status(501).send({ message: "База данных отклонила удаление" }); next(error) })
+                .catch(error => { throw ApiError.NotImplementedError(error) })
         } catch (error) {
-            res.status(500).send({ message: "Произошла неожиданная ошибка. Пожалуйста попробуйте позже" });
             next(error);
         }
     }

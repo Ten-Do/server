@@ -18,28 +18,29 @@ class TokensController {
                         throw ApiError.BadRequest('Неверный парроль');
                     }
                     const userInfo = {
+                        email: user.email,
                         name: user.name,
                         surname: user.surname,
                         role: user.role,
                         activated: user.activated,
-                        subscriptions: {
-                            admin: user.admin,
-                            reverse: user.reverse,
-                            stegano: user.stegano,
-                            ppc: user.ppc,
-                            forensic: user.forensic,
-                            crypto: user.crypto,
-                            web: user.web,
-                            network: user.network,
-                            osint: user.osint,
-                        }
                     }
+                    const userCategories = Object.entries({
+                        admin: user.admin,
+                        reverse: user.reverse,
+                        stegano: user.stegano,
+                        ppc: user.ppc,
+                        forensic: user.forensic,
+                        crypto: user.crypto,
+                        web: user.web,
+                        network: user.network,
+                        osint: user.osint,
+                    }).filter(elem => elem[1]).map(elem => elem[0])
                     const tokens = tokenService.generateTokens(userInfo);
                     tokenService.saveToken(user.id, tokens.refreshToken);
                     res.cookie('refreshToken', tokens.refreshToken, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+                    return res.status(200).json({ accessToken: tokens.accessToken, userInfo, userCategories });
                 });
 
-            return res.status(200);
         } catch (e) {
             next(e);
         }

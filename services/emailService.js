@@ -1,4 +1,5 @@
-const nodemailer = require('nodemailer')
+const nodemailer = require('nodemailer');
+const db = require('../db/db');
 const ApiError = require('../exceptions/api-error')
 require("dotenv").config({ path: __dirname + '/../.env' });
 
@@ -16,24 +17,30 @@ class EmailService {
         })
     }
 
-    
+
     async sendPass(email, pass) {
+        const verify_link = uuid.v4();
         const mailOptions = {
             from: `"КиберПолигон ГУАП" <${process.env.EMAIL_NAME}>`,
             to: email,
             subject: 'Вход в сервис ГУАП',
             html: `
-                <h2>Ваш пароль для входа на сайт</h2>
-                ${pass}
-            `
+            <h2>Ваш пароль для входа на сайт</h2>
+            ${pass}
+            <hr>
+            <a href="${process.env.SERVER_LINK}/verify/${verify_link}">ссылка для подтверждения почты</p>
+            <hr>`
         };
-
-        this.transporter.sendMail(mailOptions, (err) => {
-            if (err) {
-                console.log(err);
-                throw ApiError.BadRequest("Ошибка при отправке пароля на Email")
-            }
-        })
+        await db('unverified_emails')
+            .insert({ email, verify_link })
+            .then(() => {
+                this.transporter.sendMail(mailOptions, (err) => {
+                    if (err) {
+                        console.log(err);
+                        throw ApiError.BadRequest("Ошибка при отправке пароля на Email")
+                    }
+                })
+            })
     }
 
 
@@ -56,6 +63,40 @@ class EmailService {
             }
         })
     }
+
+    async verifyEmail(req, res, next) {
+        const verify_link = req.params.verify_link;
+        db('unverified_emails')
+            .select('email')
+            .where({ verify_link })
+            .then(emails => {
+                if (!result.lenght) return res.status(404).send("ссылка недействительна")
+                return emails[0]
+            })
+            .then((email => {
+                db.transaction((trx) => {
+                    return trx('users')
+                      .where({ email })
+                      .update({ activated: false })
+                      .then(() => {
+                        return trx('unverified_emails')
+                          .where({ email })
+                          .del();
+                      })
+                      .then(trx.commit)
+                      .catch(trx.rollback);
+                  })
+                  .then(() => {
+                    return res.redirect(`${process.env.CLIENT_LINK}/login`);
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  });
+            }))
+
+    }
+
 }
 
+// false && delete
 module.exports = new EmailService()

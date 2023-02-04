@@ -46,21 +46,18 @@ class UsersController {
             const password = gen_password();
             const hashPass = await bcrypt.hash(password, 3);
             const fileName = await Storage.addStudentCard(studentCard);
-            await emailService.sendPass(email, password);
             const userObj = subscriptions ?
                 { email, name, surname, ...subscriptions, password: hashPass, student_card: fileName, activated: false, role: 'user' }
                 :
                 { email, name, surname, password: hashPass, student_card: fileName, activated: false, role: 'user' }
-
-            await db(`users`)
+                await db(`users`)
                 .insert(userObj)
-                .then(_ => {
-                    // res.cookie('refreshToken', userData.refreshToken, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
-                    
-                    res.status(201).send({ message: "Добавление прошло успешно" })
+                .then(() => {
+                    emailService.sendPass(email, password);
+                    res.cookie('refreshToken', userData.refreshToken, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+                    res.status(201).json({ accessToken: tokens.accessToken, userInfo, userCategories });
                 })
-                .catch(error => { res.status(501).send({ message: "База данных отклонила добавление" }); next(error) })
-
+                .catch(error => { throw ApiError.NotImplementedError(error) })
         } catch (error) {
             next(error);
         }
@@ -75,7 +72,7 @@ class UsersController {
             await db('user').select('*').where('id', id)
                 .then(user => {
                     db('user').where('id', id).update({ ...user, email, name, surname, ...subscriptions })
-                        .then(_ => { res.status(201).send({ message: "Обновление прошло успешно" }) })
+                        .then(() => { res.status(201).send({ message: "Обновление прошло успешно" }) })
                 })
                 .catch(error => { res.status(501).send({ message: "Пользователь не найден" }); next(error) })
         } catch (error) {
@@ -103,14 +100,14 @@ class UsersController {
             next(error);
         }
     }
-    
+
 
     async deleteUser(req, res, next) {
         try {
             await db('users')
                 .where('id', req.body.id)
                 .del()
-                .then(_ => { res.status(200).send({ message: "Удаление прошло успешно" }) })
+                .then(() => { res.status(200).send({ message: "Удаление прошло успешно" }) })
                 .catch(error => { res.status(501).send({ message: "База данных отклонила удаление" }); next(error) })
         } catch (error) {
             res.status(500).send({ message: "Произошла неожиданная ошибка. Пожалуйста попробуйте позже" });

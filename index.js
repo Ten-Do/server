@@ -11,7 +11,15 @@ const PORT = process.env.PORT || 5000
 
 const app = express()
 
-app.use(cors());
+const whitelist = ['http://localhost:3000', 'https://www.postman.com/'];
+app.use(cors({
+    credentials: true, // This is important.
+    origin: (origin, callback) => {
+        if (whitelist.includes(origin)) return callback(null, true)
+
+        callback(new Error('Not allowed by CORS'));
+    }
+}));
 app.use(express.json());
 app.use(express.static(__dirname + '/storage'))
 app.use(cookie());

@@ -8,6 +8,7 @@ const imgValidation = require('../middlewares/validation')
 const authMiddleware = require('../middlewares/auth');
 const roleMiddleware = require('../middlewares/role');
 const accessCategoryMiddleware = require('../middlewares/access-category');
+const emailService = require('../services/emailService');
 
 const router = new Router();
 
@@ -24,11 +25,12 @@ router.put('/materials', materialsController.updateMaterial)
 router.delete('/materials', materialsController.deleteMaterial)
 
 
-router.get('/tasks', authMiddleware, accessCategoryMiddleware, tasksController.getTasks);
+router.get('/tasks', /*authMiddleware, accessCategoryMiddleware,*/ tasksController.getTasks);
 router.get('/tasks/:id', authMiddleware, accessCategoryMiddleware, tasksController.getTask);
 router.post('/tasks', authMiddleware, roleMiddleware(['Admin']), tasksController.addTask);
 router.put('/tasks', authMiddleware, roleMiddleware(['Admin']), tasksController.updateTask);
 router.delete('/tasks', authMiddleware, roleMiddleware(['Admin']), tasksController.deleteTask);
 
+router.get('verify/:verify_link', emailService.verifyEmail)
 
 module.exports = router
