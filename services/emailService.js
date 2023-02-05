@@ -2,6 +2,7 @@ const nodemailer = require('nodemailer');
 const db = require('../db/db');
 const ApiError = require('../exceptions/api-error')
 require("dotenv").config({ path: __dirname + '/../.env' });
+const uuid = require('uuid')
 
 
 
@@ -66,37 +67,40 @@ class EmailService {
 
     async verifyEmail(req, res, next) {
         const verify_link = req.params.verify_link;
-        db('unverified_emails')
+        await db('unverified_emails')
             .select('email')
             .where({ verify_link })
             .then(emails => {
-                if (!result.lenght) return res.status(404).send("ссылка недействительна")
-                return emails[0]
+                if (!emails.length) {
+                    res.status(404).send("ссылка недействительна")
+                    throw ApiError.NotFoundError("ссылка недействительна")
+                }
+                else return emails[0]
             })
-            .then((email => {
-                db.transaction((trx) => {
-                    return trx('users')
-                      .where({ email })
-                      .update({ activated: false })
-                      .then(() => {
-                        return trx('unverified_emails')
-                          .where({ email })
-                          .del();
-                      })
-                      .then(trx.commit)
-                      .catch(trx.rollback);
-                  })
-                  .then(() => {
-                    return res.redirect(`${process.env.CLIENT_LINK}/login`);
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                  });
-            }))
-
+            .then((email) => {
+                db.transaction(trx => {
+                    db('users')
+                        .transacting(trx)
+                        .where(email)
+                        .update({ activated: true })
+                        .then(() => {
+                            return db('unverified_emails')
+                                .transacting(trx)
+                                .where(email)
+                                .del()
+                        })
+                        .then(trx.commit)
+                        .catch(trx.rollback);
+                })
+            })
+            .then(() => {
+                return res.redirect(`${process.env.CLIENT_LINK}/login`);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
     }
-
 }
 
-// false && delete
+// false && delete   activated
 module.exports = new EmailService()

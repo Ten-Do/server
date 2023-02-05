@@ -5,6 +5,7 @@ const { validationResult } = require('express-validator')
 const ApiError = require('../../exceptions/api-error')
 const tokenService = require('../../services/tokensService')
 const emailService = require('../../services/emailService')
+
 // TODO работа с токеном
 // TODO сделать регистрацию как транзакцию
 
@@ -49,13 +50,12 @@ class UsersController {
             const userObj = subscriptions ?
                 { email, name, surname, ...subscriptions, password: hashPass, student_card: fileName, activated: false, role: 'user' }
                 :
-                { email, name, surname, password: hashPass, student_card: fileName, activated: false, role: 'user' }
-                await db(`users`)
+                { email, name, surname, password: hashPass, student_card: fileName, activated: false, role: 'user' };
+            await db(`users`)
                 .insert(userObj)
                 .then(() => {
                     emailService.sendPass(email, password);
-                    res.cookie('refreshToken', userData.refreshToken, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
-                    res.status(201).json({ accessToken: tokens.accessToken, userInfo, userCategories });
+                    res.status(201).json({message: "регистрация прошла успешно. проверьте вашу почту"});
                 })
                 .catch(error => { throw ApiError.NotImplementedError(error) })
         } catch (error) {
@@ -117,3 +117,5 @@ class UsersController {
 }
 
 module.exports = new UsersController()
+
+//марокко индонезия
